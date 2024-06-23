@@ -29,8 +29,7 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-void printToConsole(char charMsg[]);
-void printToUART(const uint8_t*, uint16_t );
+
 /* USER CODE END Includes */
 
 extern UART_HandleTypeDef huart3;

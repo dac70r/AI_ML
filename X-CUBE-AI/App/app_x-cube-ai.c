@@ -54,34 +54,40 @@
 #include "app_x-cube-ai.h"
 #include "main.h"
 #include "ai_datatypes_defines.h"
-#include "sine_model.h"
-#include "sine_model_data.h"
+#include "network.h"
+#include "network_data.h"
 
 /* USER CODE BEGIN includes */
+ static float aiInData[AI_NETWORK_IN_1_SIZE];
+ static float aiOutData[AI_NETWORK_OUT_1_SIZE];
+
+ ai_u8 activations[AI_NETWORK_DATA_ACTIVATIONS_SIZE];
+ const char* activities[AI_NETWORK_OUT_1_SIZE] = {
+   "stationary", "walking", "running"
+ };
 #include "usart.h"
-#include <math.h>	  // For M_PI
 /* USER CODE END includes */
 
 /* IO buffers ----------------------------------------------------------------*/
 
-#if !defined(AI_SINE_MODEL_INPUTS_IN_ACTIVATIONS)
-AI_ALIGNED(4) ai_i8 data_in_1[AI_SINE_MODEL_IN_1_SIZE_BYTES];
-ai_i8* data_ins[AI_SINE_MODEL_IN_NUM] = {
+#if !defined(AI_NETWORK_INPUTS_IN_ACTIVATIONS)
+AI_ALIGNED(4) ai_i8 data_in_1[AI_NETWORK_IN_1_SIZE_BYTES];
+ai_i8* data_ins[AI_NETWORK_IN_NUM] = {
 data_in_1
 };
 #else
-ai_i8* data_ins[AI_SINE_MODEL_IN_NUM] = {
+ai_i8* data_ins[AI_NETWORK_IN_NUM] = {
 NULL
 };
 #endif
 
-#if !defined(AI_SINE_MODEL_OUTPUTS_IN_ACTIVATIONS)
-AI_ALIGNED(4) ai_i8 data_out_1[AI_SINE_MODEL_OUT_1_SIZE_BYTES];
-ai_i8* data_outs[AI_SINE_MODEL_OUT_NUM] = {
+#if !defined(AI_NETWORK_OUTPUTS_IN_ACTIVATIONS)
+AI_ALIGNED(4) ai_i8 data_out_1[AI_NETWORK_OUT_1_SIZE_BYTES];
+ai_i8* data_outs[AI_NETWORK_OUT_NUM] = {
 data_out_1
 };
 #else
-ai_i8* data_outs[AI_SINE_MODEL_OUT_NUM] = {
+ai_i8* data_outs[AI_NETWORK_OUT_NUM] = {
 NULL
 };
 #endif
@@ -89,13 +95,13 @@ NULL
 /* Activations buffers -------------------------------------------------------*/
 
 AI_ALIGNED(32)
-static uint8_t pool0[AI_SINE_MODEL_DATA_ACTIVATION_1_SIZE];
+static uint8_t pool0[AI_NETWORK_DATA_ACTIVATION_1_SIZE];
 
 ai_handle data_activations0[] = {pool0};
 
 /* AI objects ----------------------------------------------------------------*/
 
-static ai_handle sine_model = AI_HANDLE_NULL;
+static ai_handle network = AI_HANDLE_NULL;
 
 static ai_buffer* ai_input;
 static ai_buffer* ai_output;
@@ -118,37 +124,37 @@ static int ai_boostrap(ai_handle *act_addr)
   ai_error err;
 
   /* Create and initialize an instance of the model */
-  err = ai_sine_model_create_and_init(&sine_model, act_addr, NULL);
+  err = ai_network_create_and_init(&network, act_addr, NULL);
   if (err.type != AI_ERROR_NONE) {
-    ai_log_err(err, "ai_sine_model_create_and_init");
+    ai_log_err(err, "ai_network_create_and_init");
     return -1;
   }
 
-  ai_input = ai_sine_model_inputs_get(sine_model, NULL);
-  ai_output = ai_sine_model_outputs_get(sine_model, NULL);
+  ai_input = ai_network_inputs_get(network, NULL);
+  ai_output = ai_network_outputs_get(network, NULL);
 
-#if defined(AI_SINE_MODEL_INPUTS_IN_ACTIVATIONS)
+#if defined(AI_NETWORK_INPUTS_IN_ACTIVATIONS)
   /*  In the case where "--allocate-inputs" option is used, memory buffer can be
    *  used from the activations buffer. This is not mandatory.
    */
-  for (int idx=0; idx < AI_SINE_MODEL_IN_NUM; idx++) {
+  for (int idx=0; idx < AI_NETWORK_IN_NUM; idx++) {
 	data_ins[idx] = ai_input[idx].data;
   }
 #else
-  for (int idx=0; idx < AI_SINE_MODEL_IN_NUM; idx++) {
+  for (int idx=0; idx < AI_NETWORK_IN_NUM; idx++) {
 	  ai_input[idx].data = data_ins[idx];
   }
 #endif
 
-#if defined(AI_SINE_MODEL_OUTPUTS_IN_ACTIVATIONS)
+#if defined(AI_NETWORK_OUTPUTS_IN_ACTIVATIONS)
   /*  In the case where "--allocate-outputs" option is used, memory buffer can be
    *  used from the activations buffer. This is no mandatory.
    */
-  for (int idx=0; idx < AI_SINE_MODEL_OUT_NUM; idx++) {
+  for (int idx=0; idx < AI_NETWORK_OUT_NUM; idx++) {
 	data_outs[idx] = ai_output[idx].data;
   }
 #else
-  for (int idx=0; idx < AI_SINE_MODEL_OUT_NUM; idx++) {
+  for (int idx=0; idx < AI_NETWORK_OUT_NUM; idx++) {
 	ai_output[idx].data = data_outs[idx];
   }
 #endif
@@ -156,18 +162,21 @@ static int ai_boostrap(ai_handle *act_addr)
   return 0;
 }
 
-static int ai_run(void)
+static int ai_run(float *pIn, float *pOut)
 {
   ai_i32 batch;
 
-  batch = ai_sine_model_run(sine_model, ai_input, ai_output);
+
+  /* Update IO handlers with the data payload */
+   ai_input[0].data = AI_HANDLE_PTR(pIn);
+   ai_output[0].data = AI_HANDLE_PTR(pOut);
+
+  batch = ai_network_run(network, ai_input, ai_output);
   if (batch != 1) {
-    ai_log_err(ai_sine_model_get_error(sine_model),
-        "ai_sine_model_run");
+    ai_log_err(ai_network_get_error(network),
+        "ai_network_run");
     return -1;
   }
-  else
-	  printToConsole("\r\n AI RUN \r\n");
 
   return 0;
 }
@@ -175,55 +184,30 @@ static int ai_run(void)
 /* USER CODE BEGIN 2 */
 int acquire_and_process_data(ai_i8* data[])
 {
-	// Define buffer
-		 char strs[40]; // Ensure this buffer is large enough
-
-	// Generate a random value between 0 and 1
-		double random_fractions = (double)rand() / RAND_MAX;
-
-		// Scale it to the range [0, 2*pi]
-		double random_values = random_fractions * 2.0 * M_PI;
-
-		// Convert integer to string using snprintf
-		snprintf(strs, sizeof(strs), "Inserted random value is: %f", random_values);
-
-		// Print to visualize the results
-		printToConsole(strs);
-
-	// ai_i8 size = sizeof(data) / sizeof(data[0]);
-	// Fill the array pointed to by data[0] with the value of position
-
-	for (int i = 0; i < AI_SINE_MODEL_IN_NUM; i++) {
-		(*data)[i] = random_values;
-	}
-
-	return 0;
-}
-
-int post_process(ai_i8* data[])
-{
-  /* process the predictions
-  for (int idx=0; idx < AI_SINE_MODEL_OUT_NUM; idx++ )
+  /* fill the inputs of the c-model
+  for (int idx=0; idx < AI_NETWORK_IN_NUM; idx++ )
   {
       data[idx] = ....
   }
+
   */
-	uint8_t value_data[AI_SINE_MODEL_IN_NUM] = {};
+  return 0;
+}
 
-	for (int i = 0; i < AI_SINE_MODEL_IN_NUM; i++) {
-		value_data[i] = (*data)[i];
-		if(value_data[i] >= 128)
-		{
-			value_data[i] -= 128;
-		}
+int post_process(float* data)
+{
+	char hello[30] = "Output Data is: ";
+	char hello_2[30];
+	float a = 1.99;
+	sprintf(hello_2,"%f",a);
+  /* process the predictions */
+  for (int idx=0; idx < AI_NETWORK_OUT_NUM; idx++ )
+  {
+	  HAL_UART_Transmit(&huart3,(uint8_t*)hello,sizeof(hello),1000);
+	  HAL_UART_Transmit(&huart3,(uint8_t*)hello_2,sizeof(hello_2),1000);
+  }
 
-		else
-		{
-			value_data[i] += 128;
-		}
-	}
-	/*
-*/
+	sprintf(hello,"%f",a);
   return 0;
 }
 /* USER CODE END 2 */
@@ -234,9 +218,7 @@ void MX_X_CUBE_AI_Init(void)
 {
     /* USER CODE BEGIN 5 */
   printf("\r\nTEMPLATE - initialization\r\n");
-  printToConsole("\r\nTEMPLATE - initialization\r\n");
 
-  /* Create and initialize an instance of the model */
   ai_boostrap(data_activations0);
     /* USER CODE END 5 */
 }
@@ -245,34 +227,29 @@ void MX_X_CUBE_AI_Process(void)
 {
     /* USER CODE BEGIN 6 */
   int res = -1;
-  uint8_t x_count = 0;
-  //uint8_t* x_count_ptr = &x_count;
+  aiInData[0] = 6.533f;
+  aiOutData[0] = 3.0f;
 
   printf("TEMPLATE - run - main loop\r\n");
-  printToConsole("TEMPLATE - run - main loop\r\n");
 
-  if (sine_model) {
+  if (network) {
 
     do {
-      /* 1 - acquire and pre-process input data */ // calls the function in the model
+      /* 1 - acquire and pre-process input data */
       res = acquire_and_process_data(data_ins);
-      /* 2 - process the data - call inference engine */ // calls the function in the model
+      /* 2 - process the data - call inference engine */
       if (res == 0)
-        res = ai_run();
+        res = ai_run(aiInData,aiOutData);
       /* 3- post-process the predictions */
       if (res == 0)
-        res = post_process(data_outs);
-      //printToConsole("Acquiring and Processing Data:");
-      //HAL_UART_Transmit(&huart3, x_count_ptr, sizeof(x_count), 100);
-      //printToConsole("\n");
-      HAL_Delay(1000);
+        res = post_process(aiOutData);
+      HAL_Delay(500);
     } while (res==0);
   }
 
   if (res) {
     ai_error err = {AI_ERROR_INVALID_STATE, AI_ERROR_CODE_NETWORK};
     ai_log_err(err, "Process has FAILED");
-    printToConsole("Process has FAILED");
   }
     /* USER CODE END 6 */
 }

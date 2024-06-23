@@ -35,34 +35,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := sine_model
+BUILD_ARTIFACT_NAME := ai_ml_2
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-sine_model.elf \
+ai_ml_2.elf \
 
 MAP_FILES += \
-sine_model.map \
+ai_ml_2.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-sine_model.list \
+ai_ml_2.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: sine_model.elf secondary-outputs
+main-build: ai_ml_2.elf secondary-outputs
 
 # Tool invocations
-sine_model.elf sine_model.map: $(OBJS) $(USER_OBJS) C:\Users\guan-ming.dennis-won\STM32CubeIDE\workspace_1.15.1\sine_model\STM32H743ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "sine_model.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\guan-ming.dennis-won\STM32CubeIDE\workspace_1.15.1\sine_model\STM32H743ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="sine_model.map" -Wl,--gc-sections -static -L../Middlewares/ST/AI/Lib -u _printf_float --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+ai_ml_2.elf ai_ml_2.map: $(OBJS) $(USER_OBJS) C:\Users\denni\STM32CubeIDE\workspace_1.15.1\ai_ml_2\STM32H743ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "ai_ml_2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\denni\STM32CubeIDE\workspace_1.15.1\ai_ml_2\STM32H743ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ai_ml_2.map" -Wl,--gc-sections -static -L../Middlewares/ST/AI/Lib -u _printf_float_ --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -71,14 +71,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-sine_model.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "sine_model.list"
+ai_ml_2.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "ai_ml_2.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout sine_model.elf sine_model.list sine_model.map
+	-$(RM) ai_ml_2.elf ai_ml_2.list ai_ml_2.map default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)

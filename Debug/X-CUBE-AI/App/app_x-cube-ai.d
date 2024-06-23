@@ -28,15 +28,13 @@ X-CUBE-AI/App/app_x-cube-ai.o: ../X-CUBE-AI/App/app_x-cube-ai.c \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c_ex.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h \
- ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim.h \
- ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim_ex.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h \
  ../Middlewares/ST/AI/Inc/ai_datatypes_defines.h \
  ../Middlewares/ST/AI/Inc/ai_platform.h \
- ../Middlewares/ST/AI/Inc/core_assert.h ../X-CUBE-AI/App/sine_model.h \
- ../X-CUBE-AI/App/sine_model_config.h ../X-CUBE-AI/App/sine_model_data.h \
- ../X-CUBE-AI/App/sine_model_data_params.h ../Core/Inc/usart.h \
+ ../Middlewares/ST/AI/Inc/core_assert.h ../X-CUBE-AI/App/network.h \
+ ../X-CUBE-AI/App/network_config.h ../X-CUBE-AI/App/network_data.h \
+ ../X-CUBE-AI/App/network_data_params.h ../Core/Inc/usart.h \
  ../Core/Inc/main.h
 ../X-CUBE-AI/App/app_x-cube-ai.h:
 ../Middlewares/ST/AI/Inc/ai_platform.h:
@@ -69,16 +67,14 @@ X-CUBE-AI/App/app_x-cube-ai.o: ../X-CUBE-AI/App/app_x-cube-ai.c \
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c_ex.h:
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h:
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h:
-../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim.h:
-../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim_ex.h:
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h:
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h:
 ../Middlewares/ST/AI/Inc/ai_datatypes_defines.h:
 ../Middlewares/ST/AI/Inc/ai_platform.h:
 ../Middlewares/ST/AI/Inc/core_assert.h:
-../X-CUBE-AI/App/sine_model.h:
-../X-CUBE-AI/App/sine_model_config.h:
-../X-CUBE-AI/App/sine_model_data.h:
-../X-CUBE-AI/App/sine_model_data_params.h:
+../X-CUBE-AI/App/network.h:
+../X-CUBE-AI/App/network_config.h:
+../X-CUBE-AI/App/network_data.h:
+../X-CUBE-AI/App/network_data_params.h:
 ../Core/Inc/usart.h:
 ../Core/Inc/main.h:

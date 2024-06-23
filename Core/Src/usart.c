@@ -136,21 +136,5 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
-void printToUART(const uint8_t* pData, uint16_t msgSize) {
-    HAL_UART_Transmit(&huart3, pData, msgSize, 100);
-}
 
-/**
- * @brief handler for print to console
- *
- * @param charMsg message to be print
- */
-void printToConsole(char charMsg[]) {
-    char tempMsg[50] = {'\0'};
-    strcat(tempMsg, charMsg);
-    strcat(tempMsg, "\r\n");
-    uint8_t outMsg[50] = {'\0'};
-    snprintf((uint8_t*)outMsg, sizeof(outMsg), tempMsg);
-    printToUART((uint8_t*)outMsg, sizeof(outMsg));
-}
 /* USER CODE END 1 */
